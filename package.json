@@ -4,8 +4,9 @@
   "description": "Web search + fetch extension for pi (OpenAI search + Readability extraction)",
   "license": "MIT",
   "type": "commonjs",
+  "main": "dist/index.js",
   "files": [
-    "index.ts",
+    "dist/index.js",
     "README.md",
     "LICENSE"
   ],
@@ -28,9 +29,11 @@
     "node": ">=20"
   },
   "scripts": {
+    "build": "rm -rf dist && esbuild index.ts --platform=node --format=cjs --outfile=dist/index.js --packages=external",
+    "prepare": "npm run build",
     "test": "node --test test/*.test.cjs",
     "pack:check": "npm pack --dry-run",
-    "release:dry-run": "npm publish --dry-run"
+    "release:dry-run": "npm publish --dry-run --access public"
   },
   "dependencies": {
     "@mozilla/readability": "^0.5.0",
@@ -38,18 +41,23 @@
     "turndown": "^7.2.0"
   },
   "peerDependencies": {
-    "@mariozechner/pi-coding-agent": "*",
-    "@sinclair/typebox": "*"
+    "@mariozechner/pi-coding-agent": "^0.54.2",
+    "@sinclair/typebox": "^0.34.48"
   },
   "optionalDependencies": {
     "playwright": "^1.58.2"
   },
   "devDependencies": {
+    "@sinclair/typebox": "^0.34.48",
+    "esbuild": "^0.25.9",
     "jiti": "^2.4.2"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "pi": {
     "extensions": [
-      "./index.ts"
+      "./dist/index.js"
     ]
   }
 }
