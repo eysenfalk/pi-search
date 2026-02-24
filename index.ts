@@ -74,6 +74,20 @@ const AUTH_PROBE_ORDER = ["openai-codex", "openai"];
 const FETCH_TIMEOUT_MS = 30_000;
 const SEARCH_TIMEOUT_MS = 60_000;
 
+const DEFAULT_BLOCKED_WEB_TOOLS = [
+	"websearch_cited",
+	"duckduckgo_search",
+	"mcp_web_search",
+	"mcp_fetch",
+	"web_search_exa",
+	"web_search_tavily",
+	"browser_search",
+	"browser_fetch",
+] as const;
+
+const BASH_WEB_PATTERN =
+	/\b(curl|wget|httpie|lynx|w3m|links|xh)\b|https?:\/\/|node\s+-e\s+.*fetch\(|python\s+-c\s+.*requests\./i;
+
 // Turndown instance (reused)
 const turndown = new TurndownService({
 	headingStyle: "atx",
@@ -83,6 +97,33 @@ const turndown = new TurndownService({
 
 // Remove images and iframes from markdown output (noise for LLMs)
 turndown.remove(["img", "iframe", "video", "audio", "canvas", "svg"]);
+
+function isEnvEnabled(name: string, defaultValue = true): boolean {
+	const raw = process.env[name];
+	if (raw == null) return defaultValue;
+	const value = raw.trim().toLowerCase();
+	if (value === "" || value === "1" || value === "true" || value === "yes" || value === "on") return true;
+	if (value === "0" || value === "false" || value === "no" || value === "off") return false;
+	return defaultValue;
+}
+
+function parseCsvEnv(name: string): string[] {
+	const raw = process.env[name];
+	if (!raw) return [];
+	return raw
+		.split(",")
+		.map((s) => s.trim())
+		.filter(Boolean);
+}
+
+function getBlockedWebTools(): Set<string> {
+	const blocked = new Set<string>(DEFAULT_BLOCKED_WEB_TOOLS);
+	for (const name of parseCsvEnv("PI_SEARCH_EXTRA_BLOCKED_TOOLS")) blocked.add(name);
+	for (const name of parseCsvEnv("PI_SEARCH_ALLOWED_WEB_TOOLS")) blocked.delete(name);
+	blocked.delete("web_search");
+	blocked.delete("web_fetch");
+	return blocked;
+}
 
 // ---------------------------------------------------------------------------
 // Auth resolution
@@ -415,6 +456,10 @@ export const __testables = {
 	extractSnippetAround,
 	htmlToMarkdown,
 	parseSSEResponse,
+	isEnvEnabled,
+	parseCsvEnv,
+	getBlockedWebTools,
+	BASH_WEB_PATTERN,
 };
 
 // ---------------------------------------------------------------------------
@@ -422,6 +467,37 @@ export const __testables = {
 // ---------------------------------------------------------------------------
 
 export default function webBrowseExtension(pi: ExtensionAPI) {
+	const webPolicyEnabled = isEnvEnabled("PI_SEARCH_ENFORCE_WEB_POLICY", true);
+	const bashPolicyEnabled = isEnvEnabled("PI_SEARCH_BLOCK_BASH_WEB", true);
+	const blockedWebTools = getBlockedWebTools();
+
+	if (webPolicyEnabled) {
+		pi.on("before_agent_start", async (event) => ({
+			systemPrompt:
+				event.systemPrompt +
+				"\n\nWeb policy: use only tools `web_search` and `web_fetch` for web access. Do not use other web-search/web-fetch tools or bash-based fetching.",
+		}));
+
+		pi.on("tool_call", async (event) => {
+			if (blockedWebTools.has(event.toolName)) {
+				return {
+					block: true,
+					reason: "Blocked by pi-search policy: use `web_search` / `web_fetch` only for web access.",
+				};
+			}
+
+			if (bashPolicyEnabled && event.toolName === "bash") {
+				const command = String((event.input as any)?.command ?? "");
+				if (BASH_WEB_PATTERN.test(command)) {
+					return {
+						block: true,
+						reason: "Blocked by pi-search policy: web access via bash is disabled. Use `web_search` / `web_fetch`.",
+					};
+				}
+			}
+		});
+	}
+
 	// ---- web_search ----
 	pi.registerTool({
 		name: "web_search",

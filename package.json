@@ -1,6 +1,6 @@
 {
   "name": "@aemonculaba/pi-search",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Web search + fetch extension for pi (OpenAI search + Readability extraction)",
   "license": "MIT",
   "type": "commonjs",
@@ -9,6 +9,7 @@
     "index.cjs",
     "dist/index.js",
     "README.md",
+    "docs/PI_AGENT_OPERATIONS.md",
     "LICENSE"
   ],
   "keywords": [
