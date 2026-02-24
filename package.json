@@ -4,8 +4,9 @@
   "description": "Web search + fetch extension for pi (OpenAI search + Readability extraction)",
   "license": "MIT",
   "type": "commonjs",
-  "main": "dist/index.js",
+  "main": "index.cjs",
   "files": [
+    "index.cjs",
     "dist/index.js",
     "README.md",
     "LICENSE"
@@ -57,7 +58,7 @@
   },
   "pi": {
     "extensions": [
-      "./dist/index.js"
+      "./index.cjs"
     ]
   }
 }
