@@ -26,15 +26,17 @@ Also returns links found on the page for follow-up crawling.
 2. `openai` API key
 3. `OPENAI_API_KEY` env var
 
-## Local dev
+## Local dev (no symlink)
 
 ```bash
 npm install
 npx playwright install chromium
-./scripts/link-to-pi.sh
+pi install /absolute/path/to/pi-search
 ```
 
 Then in pi run `/reload`.
+
+To update while developing, just edit files and run `/reload` again.
 
 ## Install from npm in pi
 
@@ -55,7 +57,21 @@ npm run pack:check
 npm run release:dry-run
 ```
 
-2. Publish (tag + push):
+2. Publish a **dev tag** (for npm-based testing before latest):
+
+```bash
+npm version prerelease --preid=dev
+npm publish --tag dev
+```
+
+Then test in pi:
+
+```bash
+pi remove npm:@eysenfalk/pi-search || true
+pi install npm:@eysenfalk/pi-search@dev
+```
+
+3. Publish stable (tag + push):
 
 ```bash
 git tag v0.1.0
@@ -64,7 +80,7 @@ git push origin v0.1.0
 
 GitHub Action will publish to npm using `NPM_TOKEN` secret.
 
-3. Test official install in pi:
+4. Test official install in pi:
 
 ```bash
 pi remove npm:@eysenfalk/pi-search || true
