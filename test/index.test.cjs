@@ -3,6 +3,8 @@ const assert = require('node:assert/strict');
 const jiti = require('jiti')(__filename, { interopDefault: true });
 
 const mod = jiti('../index.ts');
+assert.ok(mod, 'module export missing from index.ts');
+assert.ok(mod.__testables, '__testables export missing from index.ts');
 const t = mod.__testables;
 
 function makeJwt(payload) {

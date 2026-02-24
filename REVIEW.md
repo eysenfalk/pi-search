@@ -11,7 +11,7 @@
 ## Risks / caveats
 
 1. **Markdown links may stay relative**
-   - `htmlToMarkdown()` keeps relative hrefs in markdown text (`/path`) while `links[]` are absolute.
+   - `htmlToMarkdown()` keeps relative hrefs in Markdown text (`/path`) while `links[]` are absolute.
    - Not broken, but can be confusing in output.
 
 2. **Playwright dependency cost**
@@ -26,7 +26,7 @@
 
 ## Suggested next improvements
 
-- Normalize markdown links to absolute URLs.
-- Add retries with exponential backoff for `web_search` and `web_fetch` network calls.
-- Add optional domain include/exclude filtering on `web_search` results.
+- Normalize Markdown links to absolute URLs.
+- Implement retries with exponential backoff for `web_search` and `web_fetch` network calls.
+- Provide optional domain include/exclude filtering on `web_search` results.
 - Add integration tests with mocked fetch for end-to-end tool behavior.
