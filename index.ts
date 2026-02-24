@@ -405,6 +405,19 @@ async function smartFetch(
 }
 
 // ---------------------------------------------------------------------------
+// Test exports (pure helpers)
+// ---------------------------------------------------------------------------
+
+export const __testables = {
+	isCodexJwt,
+	extractAccountId,
+	extractSearchResults,
+	extractSnippetAround,
+	htmlToMarkdown,
+	parseSSEResponse,
+};
+
+// ---------------------------------------------------------------------------
 // Extension
 // ---------------------------------------------------------------------------
 
