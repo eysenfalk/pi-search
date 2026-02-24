@@ -1,4 +1,4 @@
-# @eysenfalk/pi-search
+# @aemonculaba/pi-search
 
 Web search + fetch extension for pi with an agent-first browse workflow:
 
@@ -41,9 +41,9 @@ To update while developing, just edit files and run `/reload` again.
 ## Install from npm in pi
 
 ```bash
-pi install npm:@eysenfalk/pi-search
+pi install npm:@aemonculaba/pi-search
 # or pin a version
-pi install npm:@eysenfalk/pi-search@0.1.0
+pi install npm:@aemonculaba/pi-search@0.1.0
 ```
 
 ## Release / test install flow
@@ -67,8 +67,8 @@ npm publish --tag dev
 Then test in pi:
 
 ```bash
-pi remove npm:@eysenfalk/pi-search || true
-pi install npm:@eysenfalk/pi-search@dev
+pi remove npm:@aemonculaba/pi-search || true
+pi install npm:@aemonculaba/pi-search@dev
 ```
 
 3. Publish stable (tag + push):
@@ -78,20 +78,19 @@ git tag v0.1.0
 git push origin v0.1.0
 ```
 
-GitHub Action will publish to npm using `NPM_TOKEN` secret.
+GitHub Action will publish to npm via Trusted Publishing (OIDC), no `NPM_TOKEN` needed.
 
 4. Test official install in pi:
 
 ```bash
-pi remove npm:@eysenfalk/pi-search || true
-pi install npm:@eysenfalk/pi-search@0.1.0
+pi remove npm:@aemonculaba/pi-search || true
+pi install npm:@aemonculaba/pi-search@0.1.0
 ```
 
 ## CI/CD
 
 - `CI` workflow: install, test, package dry-check on push/PR
-- `Release` workflow: publish to npm on `v*` tags (or manual dispatch)
-- `CodeRabbit` workflow: AI PR review on pull requests
+- `Release` workflow: publish to npm on `v*` tags (or manual dispatch) using npm Trusted Publishing
 
 ## Config
 
