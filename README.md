@@ -1,56 +1,58 @@
-# Web Search & Fetch — pi Extension
+# pi-search
 
-Two tools that let the agent browse the web like a human:
+Web search + fetch extension for pi with an agent-first browse workflow:
+
+1. `web_search(query)` → list of results (title, URL, snippet)
+2. `web_fetch(url)` → clean Markdown content + links found on page
+
+This avoids DDG scraping/rate limits by using OpenAI/Codex native web search.
+
+## Tools
 
 ### `web_search`
-Search the web, get back raw results (title, URL, snippet). Powered by OpenAI's
-built-in `web_search` tool — uses your Codex subscription, no DDG rate limits.
+Uses OpenAI `web_search` tool (Codex OAuth or OpenAI API key) and returns raw results.
 
 ### `web_fetch`
-Fetch a URL and extract clean **Markdown** content. Three extraction methods:
+Fetches and extracts page content via:
+- **Readability + Turndown** (default)
+- **Playwright + Readability** fallback for JS-heavy pages
+- **Raw text** fallback for non-HTML responses
 
-| Method | When | How |
-|--------|------|-----|
-| **Readability + Turndown** | Default for HTML pages | Mozilla's Readability extracts article content, Turndown converts to Markdown |
-| **Playwright + Readability** | JS-heavy SPAs, or when static extraction fails | Headless Chromium renders the page first, then Readability extracts |
-| **Raw text** | Non-HTML content | Returns text as-is |
+Also returns links found on the page for follow-up crawling.
 
-Also returns **links found on the page** so the agent can follow them.
+## Auth priority
 
-## Workflow
+1. `openai-codex` (`/login` subscription)
+2. `openai` API key
+3. `OPENAI_API_KEY` env var
 
-```
-Agent: web_search("pi coding agent release notes")
-  → 10 results: title, URL, snippet
+## Install
 
-Agent: web_fetch(url="https://github.com/badlogic/pi-mono/releases")
-  → Clean Markdown + 25 links found on page
-
-Agent: web_fetch(url="https://mariozechner.at/posts/...")
-  → Full blog post as Markdown
-
-Agent: synthesizes answer from what it actually read
+```bash
+npm install
+npx playwright install chromium
+./scripts/link-to-pi.sh
 ```
 
-## Auth
+Then in pi run `/reload`.
 
-Uses OpenAI's web search. Priority:
-1. **Codex OAuth** — `/login` subscription (free with ChatGPT Plus/Pro)
-2. **OpenAI API key** — `OPENAI_API_KEY` env var
+## Tests
 
-## Dependencies
+```bash
+npm test
+```
 
-Installed in `node_modules/` (run `npm install` if missing):
-- `@mozilla/readability` — article extraction (Firefox Reader View algorithm)
-- `linkedom` — fast DOM parser (no browser needed)
-- `turndown` — HTML to Markdown converter
-
-Optional:
-- **Playwright + Chromium** — for JS-rendered pages (`npx playwright install chromium`)
+Covers pure helpers for:
+- JWT detection and account-id extraction
+- SSE response parsing
+- search result extraction & dedupe
+- snippet extraction
+- HTML → Markdown extraction
 
 ## Config
 
 | Variable | Description |
-|----------|-------------|
-| `WEBSEARCH_MODEL` | Override model (default: `gpt-5.2` for Codex) |
-| `OPENAI_API_KEY` | Fallback API key |
+|---|---|
+| `WEBSEARCH_PROVIDER` | Force provider (`openai`) |
+| `WEBSEARCH_MODEL` | Override model (default `gpt-5.2` for codex) |
+| `OPENAI_API_KEY` | API key fallback |
