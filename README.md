@@ -1,4 +1,4 @@
-# pi-search
+# @eysenfalk/pi-search
 
 Web search + fetch extension for pi with an agent-first browse workflow:
 
@@ -26,7 +26,7 @@ Also returns links found on the page for follow-up crawling.
 2. `openai` API key
 3. `OPENAI_API_KEY` env var
 
-## Install
+## Local dev
 
 ```bash
 npm install
@@ -36,18 +36,46 @@ npx playwright install chromium
 
 Then in pi run `/reload`.
 
-## Tests
+## Install from npm in pi
 
 ```bash
-npm test
+pi install npm:@eysenfalk/pi-search
+# or pin a version
+pi install npm:@eysenfalk/pi-search@0.1.0
 ```
 
-Covers pure helpers for:
-- JWT detection and account-id extraction
-- SSE response parsing
-- search result extraction & dedupe
-- snippet extraction
-- HTML → Markdown extraction
+## Release / test install flow
+
+1. Validate package locally:
+
+```bash
+npm ci
+npm test
+npm run pack:check
+npm run release:dry-run
+```
+
+2. Publish (tag + push):
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+GitHub Action will publish to npm using `NPM_TOKEN` secret.
+
+3. Test official install in pi:
+
+```bash
+pi remove npm:@eysenfalk/pi-search || true
+pi install npm:@eysenfalk/pi-search@0.1.0
+```
+
+## CI/CD
+
+- `CI` workflow: install, test, package dry-check on push/PR
+- `Release` workflow: publish to npm on `v*` tags (or manual dispatch)
+- `CodeRabbit` workflow: AI PR review on pull requests
 
 ## Config
 
