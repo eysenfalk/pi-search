@@ -1,0 +1,14 @@
+{
+  "name": "pi-web-browse",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Web search + fetch extension for pi (Readability + Turndown + Playwright)",
+  "dependencies": {
+    "@mozilla/readability": "^0.5.0",
+    "linkedom": "^0.18.0",
+    "turndown": "^7.2.0"
+  },
+  "pi": {
+    "extensions": ["./index.ts"]
+  }
+}
