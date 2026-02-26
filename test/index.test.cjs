@@ -212,6 +212,27 @@ test('webBrowseExtension blocks bash web-command patterns by default', async () 
   }
 });
 
+test('webBrowseExtension does not block bash when filename contains links token', async () => {
+  delete process.env.PI_SEARCH_ENFORCE_WEB_POLICY;
+  delete process.env.PI_SEARCH_BLOCK_BASH_WEB;
+
+  const { pi, handlers } = makePiStub();
+  mod.default(pi);
+
+  const onToolCall = handlers.get('tool_call');
+  assert.equal(typeof onToolCall, 'function');
+
+  const allowedCommand = 'git add tests/docs/workflow-links.test.ts && git status --short';
+  const allowedResult = await onToolCall({ toolName: 'bash', input: { command: allowedCommand } });
+  assert.equal(allowedResult, undefined);
+
+  const blockedResult = await onToolCall({ toolName: 'bash', input: { command: 'links https://example.com' } });
+  assert.deepEqual(blockedResult, {
+    block: true,
+    reason: 'Blocked by pi-search policy: web access via bash is disabled. Use `web_search` / `web_fetch`.',
+  });
+});
+
 test('PI_SEARCH_BLOCK_BASH_WEB=false disables bash web-command blocking', async () => {
   delete process.env.PI_SEARCH_ENFORCE_WEB_POLICY;
   process.env.PI_SEARCH_BLOCK_BASH_WEB = 'false';

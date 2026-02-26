@@ -85,8 +85,13 @@ const DEFAULT_BLOCKED_WEB_TOOLS = [
 	"browser_fetch",
 ] as const;
 
-const BASH_WEB_PATTERN =
-	/\b(curl|wget|httpie|lynx|w3m|links|xh)\b|https?:\/\/|node\s+-e\s+.*fetch\(|python\s+-c\s+.*requests\./i;
+const BASH_WEB_EXECUTABLE_PATTERN = /(?:^|[;&|]\s*)(?:curl|wget|httpie|lynx|w3m|links|xh)(?=\s|$)/i;
+const BASH_WEB_URL_PATTERN = /https?:\/\//i;
+const BASH_WEB_INLINE_FETCH_PATTERN = /\bnode\s+-e\s+.*fetch\(|\bpython\s+-c\s+.*requests\./i;
+
+function isBashWebAccess(command: string): boolean {
+	return BASH_WEB_EXECUTABLE_PATTERN.test(command) || BASH_WEB_URL_PATTERN.test(command) || BASH_WEB_INLINE_FETCH_PATTERN.test(command);
+}
 
 // Turndown instance (reused)
 const turndown = new TurndownService({
@@ -459,7 +464,10 @@ export const __testables = {
 	isEnvEnabled,
 	parseCsvEnv,
 	getBlockedWebTools,
-	BASH_WEB_PATTERN,
+	BASH_WEB_EXECUTABLE_PATTERN,
+	BASH_WEB_URL_PATTERN,
+	BASH_WEB_INLINE_FETCH_PATTERN,
+	isBashWebAccess,
 };
 
 // ---------------------------------------------------------------------------
@@ -488,7 +496,7 @@ export default function webBrowseExtension(pi: ExtensionAPI) {
 
 			if (bashPolicyEnabled && event.toolName === "bash") {
 				const command = String((event.input as any)?.command ?? "");
-				if (BASH_WEB_PATTERN.test(command)) {
+				if (isBashWebAccess(command)) {
 					return {
 						block: true,
 						reason: "Blocked by pi-search policy: web access via bash is disabled. Use `web_search` / `web_fetch`.",
